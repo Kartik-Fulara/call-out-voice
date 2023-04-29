@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body{
+    @apply bg-darker-blue text-slate-200 overflow-hidden
+  }
+}
+
+@layer components {
+  
+}
