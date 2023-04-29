@@ -1,7 +1,7 @@
 import { app, ipcMain, shell } from "electron";
 import serve from "electron-serve";
 import { createWindow } from "./helpers";
-import { spawn, spawnSync } from "child_process";
+import { execFile, spawn, spawnSync } from "child_process";
 
 const isProd: boolean = process.env.NODE_ENV === "production";
 
@@ -33,20 +33,15 @@ async function createMainWindow() {
     // mainWindow.webContents.openDevTools();
   }
 
-  ipcMain.on("run-python-script", () => {
-    // call python script
-    const pythonProcess = spawn("python", ["python/test.py"]);
-
-    let call = 0;
+  ipcMain.on("run-python-script", (event, args) => {
+    console.log(args);
+    const pythonProcess = execFile("python/detection.exe", [...args]);
 
     pythonProcess.stdout.on("data", (data) => {
-      console.log(`stdout: ${data}`);
       mainWindow?.webContents.send("python-script-response", data.toString());
-      console.log(data);
     });
 
     pythonProcess.stderr.on("data", (data) => {
-      console.error(`stderr: ${data}`);
       if (data.toString().includes("Traceback")) {
         mainWindow?.webContents.send("python-script-response", data.toString());
       }
@@ -57,17 +52,24 @@ async function createMainWindow() {
     });
   });
 
-  ipcMain.on("start-process", (event, args) => {
-    const pythonProcess = spawn("python", ["python/test.py"]);
-
-    pythonProcess.stdin.write(JSON.stringify({ args }));
+  ipcMain.on("start-process-audioinputs", (event, args) => {
+    const pythonProcess = execFile("python/testing-ss.exe");
 
     pythonProcess.stdout.on("data", (data) => {
-      mainWindow?.webContents.send("response-process", data.toString());
+      mainWindow?.webContents.send(
+        "response-process-audioinputs",
+        JSON.parse(data.toString())
+      );
     });
 
     pythonProcess.stderr.on("data", (data) => {
       console.error(`stderr: ${data}`);
+      if (data.toString().includes("Traceback")) {
+        mainWindow?.webContents.send(
+          "response-process-audioinputs",
+          data.toString()
+        );
+      }
     });
 
     pythonProcess.on("close", (code) => {
