@@ -1,12 +1,15 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from '../styles.module.css';
 import axios from 'axios';
+import { ipcRenderer} from 'electron';
 
 const index = ({ appName }: any) => {
 
     const [selectedTab, setSelectedTab] = useState("default");
 
     const [checked, setChecked] = useState("default");
+
+    const [isSendReq, setIsSendReq] = useState(false);
 
     const tabs = [{
         name: "default",
@@ -22,16 +25,23 @@ const index = ({ appName }: any) => {
     }
     ]
 
-    const generateCallOuts = async () => {
-        const res = await axios.get('http://127.0.0.1:6969/api/hello',{
-            params:{
-                appName:appName
-            }
+    const generateCallOuts = () => {
+        console.log("generate callouts");
+        ipcRenderer.send('run-python-script');
+        setIsSendReq(true);
+        ipcRenderer.on('python-script-response', (event, arg) => {
+            if (!isSendReq) return;
+            console.log(arg);
+            setIsSendReq(false);
+            // open the generated file
             
         });
-        console.log(res.data);
+
     }
 
+    useEffect(()=>{
+        generateCallOuts()
+    },[])
 
     return (
         <section className={styles.mainContentWrapper}>
@@ -39,9 +49,6 @@ const index = ({ appName }: any) => {
                 <img src="/images/Games/Valorant.svg" alt="app image" className='h-full w-[170px] object-cover' />
                 <div className='h-full flex flex-col gap-2 items-start'>
                     <h1 className='text-2xl font-bold'>{appName}</h1>
-                    <button className={styles.launchBtn} onClick={()=>generateCallOuts()}>
-                        Launch
-                    </button>
                 </div>
             </div>
 
@@ -108,10 +115,10 @@ const index = ({ appName }: any) => {
                         <label htmlFor="lose">Lose Callout</label>
                     </div>
                     <div className='flex gap-4 flex-col'>
-                        <input id="buy" type="text" disabled={selectedTab!=="custom"} placeholder='Buy Phase Message' className={styles.callOutInput} />
-                        <input id="win" type="text" disabled={selectedTab!=="custom"} placeholder='Win Message' className={styles.callOutInput} />
-                        <input id="spectate" type="text" disabled={selectedTab!=="custom"} placeholder='Spectate Message' className={styles.callOutInput} />
-                        <input id="lose" type="text" disabled={selectedTab!=="custom"} placeholder='Lose Message' className={styles.callOutInput} />
+                        <input id="buy" type="text" disabled={selectedTab !== "custom"} placeholder='Buy Phase Message' className={styles.callOutInput} />
+                        <input id="win" type="text" disabled={selectedTab !== "custom"} placeholder='Win Message' className={styles.callOutInput} />
+                        <input id="spectate" type="text" disabled={selectedTab !== "custom"} placeholder='Spectate Message' className={styles.callOutInput} />
+                        <input id="lose" type="text" disabled={selectedTab !== "custom"} placeholder='Lose Message' className={styles.callOutInput} />
                     </div>
 
                 </div>
