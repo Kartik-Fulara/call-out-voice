@@ -1,7 +1,7 @@
 import { app, ipcMain, shell } from "electron";
 import serve from "electron-serve";
 import { createWindow } from "./helpers";
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
 
 const isProd: boolean = process.env.NODE_ENV === "production";
 
@@ -41,12 +41,7 @@ async function createMainWindow() {
 
     pythonProcess.stdout.on("data", (data) => {
       console.log(`stdout: ${data}`);
-
-      // send data to renderer process
-
-      if (mainWindow === null) return;
-
-      // run external application
+      mainWindow?.webContents.send("python-script-response", data.toString());
       console.log(data);
     });
 
@@ -55,6 +50,24 @@ async function createMainWindow() {
       if (data.toString().includes("Traceback")) {
         mainWindow?.webContents.send("python-script-response", data.toString());
       }
+    });
+
+    pythonProcess.on("close", (code) => {
+      console.log(`child process exited with code ${code}`);
+    });
+  });
+
+  ipcMain.on("start-process", (event, args) => {
+    const pythonProcess = spawn("python", ["python/test.py"]);
+
+    pythonProcess.stdin.write(JSON.stringify({ args }));
+
+    pythonProcess.stdout.on("data", (data) => {
+      mainWindow?.webContents.send("response-process", data.toString());
+    });
+
+    pythonProcess.stderr.on("data", (data) => {
+      console.error(`stderr: ${data}`);
     });
 
     pythonProcess.on("close", (code) => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styles from '../styles.module.css';
 import axios from 'axios';
-import { ipcRenderer} from 'electron';
+import { ipcRenderer } from 'electron';
 
 const index = ({ appName }: any) => {
 
@@ -9,39 +9,49 @@ const index = ({ appName }: any) => {
 
     const [checked, setChecked] = useState("default");
 
-    const [isSendReq, setIsSendReq] = useState(false);
+    const [isSendReq, setIsSendReq] = useState(true);
+
+    const [audioInputs, setAudioInputs] = useState([{
+        id: "default",
+        name: "Default Input Device"
+    }]);
+
+    // const tabs = [{
+    //     name: "default",
+    //     content: "Default CallOuts"
+    // },
+    // {
+    //     name: "aiGenerated",
+    //     content: "Ai Generated CallOuts"
+    // },
+    // {
+    //     name: "custom",
+    //     content: "Custom CallOuts"
+    // }
+    // ]
 
     const tabs = [{
         name: "default",
         content: "Default CallOuts"
     },
-    {
-        name: "aiGenerated",
-        content: "Ai Generated CallOuts"
-    },
-    {
-        name: "custom",
-        content: "Custom CallOuts"
-    }
+
     ]
+
+
 
     const generateCallOuts = () => {
         console.log("generate callouts");
-        ipcRenderer.send('run-python-script');
-        setIsSendReq(true);
-        ipcRenderer.on('python-script-response', (event, arg) => {
-            if (!isSendReq) return;
+        ipcRenderer.send('start-process', { canStart: isSendReq });
+        setIsSendReq(!isSendReq);
+        ipcRenderer.on('response-process', (event, arg) => {
             console.log(arg);
             setIsSendReq(false);
             // open the generated file
-            
         });
 
     }
 
-    useEffect(()=>{
-        generateCallOuts()
-    },[])
+
 
     return (
         <section className={styles.mainContentWrapper}>
@@ -49,6 +59,21 @@ const index = ({ appName }: any) => {
                 <img src="/images/Games/Valorant.svg" alt="app image" className='h-full w-[170px] object-cover' />
                 <div className='h-full flex flex-col gap-2 items-start'>
                     <h1 className='text-2xl font-bold'>{appName}</h1>
+
+                    <button onClick={() => generateCallOuts()} className={styles.launchBtn}>
+                        Launch
+                    </button>
+
+                    <div className={styles.audioInputsContainer}>
+                        <select aria-label='audio-inputs' name="audioInputs" id="audioInputs" className={styles.audioInputs}>
+                            {
+                                audioInputs.map((input) => (
+                                    <option key={input.id} value={input.id} className={styles.audioInputsOptions}>{input.name || "Input Device Name"}</option>
+                                ))
+                            }
+                        </select>
+                    </div>
+
                 </div>
             </div>
 
@@ -98,7 +123,7 @@ const index = ({ appName }: any) => {
                     }
 
                     {
-                        selectedTab === "default" && (
+                        tabs.length>1 && selectedTab === "default" && (
                             <button className={styles.generatedBtn}>
                                 Change
                             </button>
