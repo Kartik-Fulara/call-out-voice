@@ -75,11 +75,11 @@
 }
 
 .mainContentWrapper {
-    @apply p-5 pr-10 flex flex-col justify-start items-start gap-5 h-full w-full overflow-auto;
+    @apply p-5 pr-10 flex  justify-start items-start gap-5 h-full w-full overflow-auto;
 }
 
 .appDetails {
-    @apply flex gap-2 items-center justify-start w-full h-[150px];
+    @apply flex gap-2 flex-col items-center justify-start w-[30%] h-[150px];
 }
 
 .launchBtn {
@@ -111,7 +111,7 @@
 }
 
 .callOutContent {
-    @apply flex gap-5 items-start justify-start w-full pl-5;
+    @apply flex gap-5 items-start justify-start w-full pl-5 ;
 }
 
 .generatedBtn {
@@ -122,8 +122,13 @@
     @apply outline-none bg-transparent text-slate-300 border-b-2 border-slate-300;
 }
 
+.audioInputsContainer{
+    @apply flex flex-col gap-2 items-center justify-center w-full h-full;
+}
+
 .audioInputs {
-    @apply bg-blue h-[40px] w-[250px] outline-none rounded-lg text-center cursor-pointer;
+    @apply bg-dark-blue h-[80%] w-[250px] outline-none rounded-lg text-center cursor-pointer;
+    
 }
 
 .audioInputs > option{

@@ -15,8 +15,8 @@ let mainWindow: Electron.BrowserWindow | null = null;
 
 async function createMainWindow() {
   mainWindow = createWindow("main", {
-    width: 1000,
-    height: 750,
+    width: 750,
+    height: 600,
     webPreferences: {
       nodeIntegration: true,
       devTools: true,

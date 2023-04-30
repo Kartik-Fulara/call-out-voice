@@ -1,74 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import styles from "../styles.module.css";
-import axios from "axios";
-import { ipcRenderer } from "electron";
 
-const index = ({ appName }: any) => {
-  const [selectedTab, setSelectedTab] = useState("default");
+const index = ({ contentParams }: any) => {
 
-  const [checked, setChecked] = useState("default");
+  const {
+    appName,
+    selectedTab,
+    setSelectedTab,
+    checked,
+    setChecked,
+    startTracking,
+    tabs }
+    = contentParams;
 
-  const [isSendReq, setIsSendReq] = useState(true);
 
-  const [audioInputs, setAudioInputs] = useState([]);
-
-  const [selectedInput, setSelectedInput] = useState<string>();
-
-  // const tabs = [{
-  //     name: "default",
-  //     content: "Default CallOuts"
-  // },
-  // {
-  //     name: "aiGenerated",
-  //     content: "Ai Generated CallOuts"
-  // },
-  // {
-  //     name: "custom",
-  //     content: "Custom CallOuts"
-  // }
-  // ]
-
-  const tabs = [
-    {
-      name: "default",
-      content: "Default CallOuts",
-    },
-  ];
-
-  const iniInputDevices = () => {
-    console.log("generate callouts");
-    ipcRenderer.send("start-process-audioinputs");
-    setIsSendReq(true);
-    ipcRenderer.on("response-process-audioinputs", (event, arg) => {
-      if (!isSendReq) return;
-      console.log(arg);
-      setAudioInputs(arg);
-      setIsSendReq(false);
-      // open the generated file
-    });
-  };
-
-  const startTracking = () => {
-    // console.log("generate callouts");
-    const args = [selectedInput];
-    ipcRenderer.send("run-python-script", args);
-    setIsSendReq(true);
-    ipcRenderer.on("python-script-response", (event, arg) => {
-      if (!isSendReq) return;
-      console.log(arg);
-      //   setAudioInputs(arg);
-      //   setIsSendReq(false);
-      // open the generated file
-    });
-  };
-
-  useEffect(() => {
-    iniInputDevices();
-  }, []);
-
-  const handleDropChange = (e) => {
-    setSelectedInput(e.target.value);
-  };
 
   return (
     <section className={styles.mainContentWrapper}>
@@ -78,65 +23,45 @@ const index = ({ appName }: any) => {
           alt="app image"
           className="h-full w-[170px] object-cover"
         />
-        <div className="h-full flex flex-col gap-2 items-start">
+        <div className="h-full flex flex-col gap-2 items-center">
           <h1 className="text-2xl font-bold">{appName}</h1>
 
           <button onClick={() => startTracking()} className={styles.launchBtn}>
             Launch
           </button>
 
-          <div className={styles.audioInputsContainer}>
-            <select
-              aria-label="audio-inputs"
-              name="audioInputs"
-              id="audioInputs"
-              className={styles.audioInputs}
-              value={selectedInput}
-              onChange={handleDropChange}
-            >
-              {audioInputs.map((input) => (
-                <option
-                  key={input.id}
-                  value={input.id}
-                  className={styles.audioInputsOptions}
-                >
-                  {input.deviceName || "Input Device Name"}
-                </option>
-              ))}
-            </select>
-          </div>
+
         </div>
       </div>
 
       <div className={styles.callOuts}>
         <div className={styles.tabs}>
-          {tabs.map((tab) => (
+          {tabs?.map((tab) => (
             <div
-              key={tab.name}
-              className={`${styles.tab} ${
-                selectedTab === tab.name && styles.tabSelected
-              }`}
-              onClick={() => setSelectedTab(tab.name)}
+              key={tab?.name}
+              className={`${styles.tab} ${selectedTab === tab?.name && styles.tabSelected
+                }`}
+              onClick={() => setSelectedTab(tab?.name)}
             >
-              {tab.content}
+              {tab?.content}
             </div>
           ))}
         </div>
 
         <div className={styles.useCallOutBox}>
-          {tabs.map(
+          {tabs?.map(
             (tab) =>
-              tab.name === selectedTab && (
-                <div key={tab.name} className="flex gap-2">
+              tab?.name === selectedTab && (
+                <div key={tab?.name} className="flex gap-2">
                   <input
-                    checked={tab.name === checked}
+                    checked={tab?.name === checked}
                     type="checkbox"
-                    name={tab.name}
-                    id={tab.name}
-                    onChange={() => setChecked(tab.name)}
+                    name={tab?.name}
+                    id={tab?.name}
+                    onChange={() => setChecked(tab?.name)}
                   />
-                  <label htmlFor={tab.name} className={styles.callOutsLabel}>
-                    Use {tab.content}
+                  <label htmlFor={tab?.name} className={styles.callOutsLabel}>
+                    Use {tab?.content}
                   </label>
                 </div>
               )
@@ -150,7 +75,7 @@ const index = ({ appName }: any) => {
             <button className={styles.generatedBtn}>Save CallOuts</button>
           )}
 
-          {tabs.length > 1 && selectedTab === "default" && (
+          {tabs?.length > 1 && selectedTab === "default" && (
             <button className={styles.generatedBtn}>Change</button>
           )}
         </div>

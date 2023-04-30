@@ -2,7 +2,14 @@ import Link from 'next/link'
 import React from 'react'
 import styles from "../styles.module.css"
 
-const index = () => {
+const index = ({ headerParams }: any) => {
+
+  const {
+    audioInputs,
+    selectedInput,
+    handleDropChange
+  } = headerParams;
+
   return (
     <header className={styles.header}>
       <nav className={styles.navBar}>
@@ -10,12 +17,32 @@ const index = () => {
           <h4 className='uppercase'>Call Out Voice</h4>
         </div>
         <div className={styles.rightNavBar}>
-          <button className={styles.learnMoreBtn}>
+          <div className={styles.audioInputsContainer}>
+            <select
+              aria-label="audio-inputs"
+              name="audioInputs"
+              id="audioInputs"
+              className={styles.audioInputs}
+              value={selectedInput}
+              onChange={handleDropChange}
+            >
+              {audioInputs?.map((input) => (
+                <option
+                  key={input.id}
+                  value={input.id}
+                  className={styles.audioInputsOptions}
+                >
+                  {input.deviceName || "Input Device Name"}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* <button className={styles.learnMoreBtn}>
             <p className={styles.btnText}>
               LEARN MORE
             </p>
             <p className={styles.bottomBorder}></p>
-          </button>
+          </button> */}
           {/* <Link href="/auth/login">
             <a className=' px-5 py-2 rounded bg-dark-blue hover:bg-light-blue shadow-xl  text-sm '>
               Login
