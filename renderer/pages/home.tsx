@@ -109,7 +109,9 @@ function Home() {
     const timer = setInterval(async () => {
 
       if (trackStatus === "stopped") {
+        // script to stop tracking
         clearInterval(timer);
+        return;
       }
 
 
@@ -143,7 +145,7 @@ function Home() {
         console.log("tracking")
       }
 
-    }, 500);
+    }, 1000);
 
     return () => clearInterval(timer);
 
