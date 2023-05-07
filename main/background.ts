@@ -1,7 +1,9 @@
-import { app, ipcMain, shell } from "electron";
+import { app, ipcMain, ipcRenderer, shell } from "electron";
 import serve from "electron-serve";
 import { createWindow } from "./helpers";
-import { execFile, spawn, spawnSync } from "child_process";
+import { execFile, exec, spawn, spawnSync } from "child_process";
+
+import * as path from "path";
 
 const isProd: boolean = process.env.NODE_ENV === "production";
 
@@ -12,6 +14,7 @@ if (isProd) {
 }
 
 let mainWindow: Electron.BrowserWindow | null = null;
+
 
 async function createMainWindow() {
   mainWindow = createWindow("main", {
@@ -74,6 +77,36 @@ async function createMainWindow() {
 
     pythonProcess.on("close", (code) => {
       console.log(`child process exited with code ${code}`);
+    });
+  });
+
+  ipcMain.on("get-running-services", (event, args) => {
+    exec("tasklist", function (err, stdout, stderr) {
+      if (err) {
+        console.log(err);
+      } else {
+        mainWindow?.webContents.send("response-get-running-services", stdout);
+      }
+    });
+  });
+
+  ipcMain.on("get-application-location", async (event, args) => {
+
+    // run python file
+    const pythonProcess = exec(
+      `python D:\\GitHub\\hacerthon\\callOutVoice\\python\\getInstallLocationApp.py ${args}`
+    );
+
+    pythonProcess.stdout.on("data", (output) => {
+      mainWindow?.webContents.send("response-get-application-location", output);
+    });
+
+    pythonProcess.stderr.on("data", (error) => {
+      console.error(error);
+    });
+
+    pythonProcess.on("close", (code) => {
+      console.log(`Python script execution completed with code ${code}`);
     });
   });
 }

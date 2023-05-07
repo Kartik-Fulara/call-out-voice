@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 
 import Header from "../components/home/Header/index";
-import SideBar from "../components/home/SideBar/index";
+
 import Content from "../components/home/Content/index";
 import { ipcRenderer } from "electron";
-
+import { tasklist } from 'tasklist';
 
 function Home() {
 
   const games = [
     {
-      name: "Valorant",
+      name: "VALORANT",
     }
   ]
 
@@ -22,11 +22,15 @@ function Home() {
 
   const [checked, setChecked] = useState("default");
 
-  const [isSendReq, setIsSendReq] = useState(true);
+
 
   const [audioInputs, setAudioInputs] = useState([]);
 
   const [selectedInput, setSelectedInput] = useState<string>();
+
+  const [trackStatus, setTrackStatus] = useState("stopped");
+
+
 
   // const tabs = [{
   //     name: "default",
@@ -52,37 +56,107 @@ function Home() {
   const iniInputDevices = () => {
     console.log("generate callouts");
     ipcRenderer.send("start-process-audioinputs");
-    setIsSendReq(true);
+
     ipcRenderer.on("response-process-audioinputs", (event, arg) => {
-      if (!isSendReq) return;
+
       console.log(arg);
       setAudioInputs(arg);
-      setIsSendReq(false);
+
       // open the generated file
     });
   };
+
+
 
   const startTracking = () => {
-    // console.log("generate callouts");
-    const args = [selectedInput];
-    ipcRenderer.send("run-python-script", args);
-    setIsSendReq(true);
-    ipcRenderer.on("python-script-response", (event, arg) => {
-      if (!isSendReq) return;
-      console.log(arg);
-      //   setAudioInputs(arg);
-      //   setIsSendReq(false);
-      // open the generated file
-    });
+    if (trackStatus === "stopped") {
+      setTrackStatus("waiting");
+    } else if (trackStatus === "tracking") {
+      setTrackStatus("stopped");
+    }
   };
 
   useEffect(() => {
-    iniInputDevices();
-  }, []);
+    const args = [selectedInput];
+
+    const init = async () => {
+      const processes = await tasklist()
+
+      const valorantProcess = processes.find((process) => {
+        return process.imageName === "VALORANT.exe";
+      }
+      );
+
+      // if valorant process is not found
+      if (!valorantProcess) {
+        setTrackStatus("stopped");
+        alert("Valorant is not running");
+        return;
+      }
+
+      if (trackStatus === "waiting") {
+        setTrackStatus("tracking");
+      }
+
+    }
+
+    if (trackStatus === "waiting") {
+      init();
+      return;
+    }
+
+
+    const timer = setInterval(async () => {
+
+      if (trackStatus === "stopped") {
+        clearInterval(timer);
+      }
+
+
+      if (trackStatus === "tracking") {
+
+        // console.log("run python script")
+
+        // ipcRenderer.send("run-python-script", args);
+
+        // ipcRenderer.on("python-script-response", (event, arg) => {
+
+        //   console.log(arg);
+        //   //   setAudioInputs(arg);
+        //   //   setIsSendReq(false);
+        //   // open the generated file
+        // });
+
+        // it check valorant is running or not
+        const processes = await tasklist();
+        const valorantProcess = processes.find((process) => {
+          return process.imageName === "VALORANT.exe";
+        }
+        );
+
+        // if valorant process is not found
+        if (!valorantProcess) {
+          setTrackStatus("stopped");
+          alert("Valorant is not running");
+        }
+
+        console.log("tracking")
+      }
+
+    }, 500);
+
+    return () => clearInterval(timer);
+
+
+  }, [trackStatus])
+
+
 
   useEffect(() => {
-    console.log(audioInputs);
-  }, [audioInputs])
+
+
+    iniInputDevices();
+  }, []);
 
   const handleDropChange = (e) => {
     setSelectedInput(e.target.value);
@@ -94,11 +168,12 @@ function Home() {
     setSelectedTab,
     checked,
     setChecked,
-    isSendReq,
-    setIsSendReq,
-    
+
     setAudioInputs,
-    
+
+    trackStatus,
+    setTrackStatus,
+
     setSelectedInput,
     iniInputDevices,
     startTracking,

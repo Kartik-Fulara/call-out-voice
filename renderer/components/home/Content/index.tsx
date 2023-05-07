@@ -10,7 +10,11 @@ const index = ({ contentParams }: any) => {
     checked,
     setChecked,
     startTracking,
-    tabs }
+    tabs,
+    trackStatus,
+    setTrackStatus,
+    launchError,
+    setLaunchError, }
     = contentParams;
 
 
@@ -26,8 +30,16 @@ const index = ({ contentParams }: any) => {
         <div className="h-full flex flex-col gap-2 items-center">
           <h1 className="text-2xl font-bold">{appName}</h1>
 
-          <button onClick={() => startTracking()} className={styles.launchBtn}>
-            Launch
+          <button disabled={trackStatus === "waiting"} onClick={() => startTracking()} className={`${styles.launchBtn} ${trackStatus === "stopped" && styles.notRunningLaunchBtn} ${trackStatus === "waiting" && styles.waitingLaunchBtn} ${trackStatus === "tracking" && styles.stoppedLaunchBtn}`}>
+            {
+              trackStatus === "stopped" && "Launch"
+            }
+            {
+              trackStatus === "waiting" && "Waiting"
+            }
+            {
+              trackStatus === "tracking" && "Stop"
+            }
           </button>
 
 

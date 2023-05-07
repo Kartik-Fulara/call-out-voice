@@ -83,7 +83,19 @@
 }
 
 .launchBtn {
-    @apply flex items-center justify-center gap-2 bg-lighter-blue hover:bg-light-blue text-white w-[150px] py-2 rounded-md;
+    @apply flex items-center justify-center gap-2  text-white w-[150px] py-2 rounded-md;
+}
+
+.stoppedLaunchBtn {
+    @apply bg-red-500 hover:bg-red-600;
+}
+
+.waitingLaunchBtn {
+    @apply bg-yellow-500 hover:bg-yellow-600;
+}
+
+.notRunningLaunchBtn{
+    @apply bg-lighter-blue hover:bg-light-blue;
 }
 
 .callOuts {
