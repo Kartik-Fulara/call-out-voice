@@ -15,7 +15,6 @@ if (isProd) {
 
 let mainWindow: Electron.BrowserWindow | null = null;
 
-
 async function createMainWindow() {
   mainWindow = createWindow("main", {
     width: 750,
@@ -36,27 +35,37 @@ async function createMainWindow() {
     // mainWindow.webContents.openDevTools();
   }
 
-  ipcMain.on("run-python-script", (event, args) => {
-    console.log(args);
-    const pythonProcess = execFile("python/detection.exe", [...args]);
+  ipcMain.on("start-process-detection", (event, args) => {
+    console.log("Hello There from ipcMain");
+    const pythonProcess = execFile("python/dist/detection.exe", [...args]);
 
     pythonProcess.stdout.on("data", (data) => {
-      mainWindow?.webContents.send("python-script-response", data.toString());
+      mainWindow?.webContents.send(
+        "detection-script-response",
+        data.toString()
+      );
     });
 
     pythonProcess.stderr.on("data", (data) => {
       if (data.toString().includes("Traceback")) {
-        mainWindow?.webContents.send("python-script-response", data.toString());
+        mainWindow?.webContents.send(
+          "detection-script-response",
+          data.toString()
+        );
       }
     });
 
     pythonProcess.on("close", (code) => {
       console.log(`child process exited with code ${code}`);
     });
+    ipcMain.on("stop-process-detection", () => {
+      console.log("Hello There from ipcMain");
+      pythonProcess.kill();
+    });
   });
 
   ipcMain.on("start-process-audioinputs", (event, args) => {
-    const pythonProcess = execFile("python/testing-ss.exe");
+    const pythonProcess = execFile("python/dist/testing-ss.exe");
 
     pythonProcess.stdout.on("data", (data) => {
       mainWindow?.webContents.send(
@@ -91,7 +100,6 @@ async function createMainWindow() {
   });
 
   ipcMain.on("get-application-location", async (event, args) => {
-
     // run python file
     const pythonProcess = exec(
       `python D:\\GitHub\\hacerthon\\callOutVoice\\python\\getInstallLocationApp.py ${args}`
