@@ -1,4 +1,10 @@
+import keyboard
+import time
 import sys
 
-print("Hello From Python")
-sys.stdout.flush()
+while True:
+    # your code here
+    print("Script is Running....")
+    sys.stdout.flush()
+    time.sleep(1)
+

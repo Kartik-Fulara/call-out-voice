@@ -94,81 +94,65 @@ function Home() {
     return true;
   }
 
-  useEffect(() => {
-    const args = [selectedInput];
-    console.log("trackStatus=>", trackStatus);
+  useEffect(()=>{
+    ipcRenderer.send("start-process-test")
+  },[])
 
-    const init = async () => {
+   useEffect(() => {
+     const args = [selectedInput];
+     console.log("trackStatus=>", trackStatus);
 
-      const isProcessRunning = true
-      if (!isProcessRunning) {
-        alert("Valorant is not running");
-        return setTrackStatus("stopped");
-      } else if (trackStatus === "waiting") {
-        return setTrackStatus("tracking");
-      }
-    }
-    if (trackStatus === "waiting") {
-      init()
-      return
-    }
+     const init = async () => {
 
-    const timer = setInterval(async () => {
+       const isProcessRunning = await processChecker()
+       if (!isProcessRunning) {
+         alert("Valorant is not running");
+         return setTrackStatus("stopped");
+       } else if (trackStatus === "waiting") {
+         return setTrackStatus("tracking");
+       }
+     }
+     if (trackStatus === "waiting") {
+       init()
+       return
+     }
 
-      if (trackStatus === "stopped") {
-        // script to stop tracking
-        clearInterval(timer);
-        ipcRenderer.send("stop-process-detection");
-        detectRunning = false
-        return;
-      }
+     const timer = setInterval(async () => {
 
-
-      if (trackStatus === "tracking") {
-        console.log("detectRunning=>", detectRunning);
-
-        // console.log("run python script")
-        if (detectRunning === false) {
-          detectRunning = true
-          ipcRenderer.send("start-process-detection", args);
-        }
-
-        // ipcRenderer.on("python-script-response", (event, arg) => {
-
-        //   console.log(arg);
-        //   //   setAudioInputs(arg);
-        //   //   setIsSendReq(false);
-        //   // open the generated file
-        // });
-
-        // it check valorant is running or not
-        // const processes = await tasklist();
-        // const valorantProcess = processes.find((process) => {
-        //   return process.imageName === "VALORANT.exe";
-        // }
-        // );
-
-        // // if valorant process is not found
-        // if (!valorantProcess) {
-        //   setTrackStatus("stopped");
-        //   alert("Valorant is not running");
-        // }
-        const isProcessRunning = true
-        if (!isProcessRunning) {
-          alert("Valorant is not running");
-          setTrackStatus("stopped");
-        }
+       if (trackStatus === "stopped") {
+         // script to stop tracking
+         clearInterval(timer);
+         ipcRenderer.send("stop-process-detection" , "stop!")
+         detectRunning = false
+         return;
+       }
 
 
-        console.log("tracking")
-      }
+       if (trackStatus === "tracking") {
+         console.log("detectRunning=>", detectRunning);
 
-    }, 5000);
+         // console.log("run python script")
+         if (detectRunning === false) {
+           detectRunning = true
+           ipcRenderer.send("start-process-detection", args);
+         }
 
-    return () => clearInterval(timer);
+         const isProcessRunning = await processChecker()
+         if (!isProcessRunning) {
+           alert("Valorant is not running");
+           setTrackStatus("stopped");
+         }
 
 
-  }, [trackStatus])
+         console.log("tracking")
+       }
+
+     }, 5000);
+
+     return () => clearInterval(timer);
+
+
+   }, [trackStatus])
 
 
 

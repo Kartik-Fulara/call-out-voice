@@ -58,9 +58,15 @@ async function createMainWindow() {
     pythonProcess.on("close", (code) => {
       console.log(`child process exited with code ${code}`);
     });
-    ipcMain.on("stop-process-detection", () => {
-      console.log("Hello There from ipcMain");
-      pythonProcess.kill();
+
+    ipcMain.on('stop-process-detection', (event, arg) => {
+      if (process.platform === 'win32' && arg === "stop!") {
+        const taskkillProcess = spawn('taskkill', ['/pid', pythonProcess.pid.toString(), '/T', '/F']);
+        
+        taskkillProcess.on('exit', (code, signal) => {
+          console.log(`Process exited with code ${code} and signal ${signal}`);
+        });
+      }
     });
   });
 
